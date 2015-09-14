@@ -107,9 +107,9 @@ Network Trash Folder
 Temporary Items
 .apdisk
 
-.jpg
-.png
-.tif
-.tiff
-.avi
+*.jpg
+*.png
+*.tif
+*.tiff
+*.avi
 
