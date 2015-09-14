@@ -12,10 +12,12 @@ parser = argparse.ArgumentParser(description='Automatic shdaow trace anaysis')
 parser.add_argument('action')
 args = parser.parse_args()
 
+output_file = 't4_data.txt'
 video_addr = '/Users/skylarzheng/playground/shumo2015/problem set/A/Appendix_4.avi'
 screen_shot_addr = 'data/screen_shots'
-screen_shot_fmt = 'img%03d.tiff'
+screen_shot_fmt = 'img%03d.tif'
 bw_addr = 'data/bw'
+result_addr = 'data/result'
 interval = 60
 xoffset = 870
 yoffset = 800
@@ -170,19 +172,23 @@ def bColor(image, G):
 
 def process():
 	print '*******Calculating plz be patient...*******'
-	out = open('t4_data.txt', 'w')
+	subprocess.call(['rm', '-rf', bw_addr])
+	subprocess.call(['mkdir', bw_addr])
+	subprocess.call(['rm', '-rf', result_addr])
+	subprocess.call(['mkdir', result_addr])
+
+	out = open(output_file, 'w')
 	img_addr = 'data/screen_shots'
 	cases = 0.
 	for img in os.listdir(img_addr):
 		image = bColor(cut(Image.open(img_addr + '/' + img).convert("L"), xoffset, yoffset), black_white_seperater)
 		image.save(bw_addr + '/' + img)
-		clearSpots(image, flood_fill_sensitivity, out, cases).save('data/result/' + img)
+		clearSpots(image, flood_fill_sensitivity, out, cases).save(result_addr + '/' + img)
 		cases += 1
 		print img + ' process successfully!'
 
-'ffmpeg -i Appendix_4.avi -f image2 -pix_fmt gray -vf fps=fps=1/60 img%03d.tiff'
 def capture():
-	print '******Capturing screen shots, plz be patient...******'
+	print '******Capturing screen shots, it takes a long time, plz be patient...******'
 	subprocess.call(['rm', '-rf', screen_shot_addr])
 	subprocess.call(['mkdir', screen_shot_addr])
 	subprocess.call(['ffmpeg', '-loglevel', '24', \
@@ -190,11 +196,12 @@ def capture():
 		'-f', 'image2', \
 		'-pix_fmt', 'gray', \
 		'-vf', 'fps=fps=1/%d' % interval, screen_shot_addr + '/' + screen_shot_fmt])
+	print 'Capture finished.'
 
 fun_dic = {
-	'capture': capture(),
-	'process': process(),
+	'process': process,
+	'capture': capture
 }
 
 if args.action:
-	fun_dic[args.action]
+	fun_dic[args.action]()
